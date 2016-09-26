@@ -1,0 +1,6 @@
+*.sdf
+.vs/
+*.opendb
+*.pdb
+domeshconverter/Debug/
+Debug/
