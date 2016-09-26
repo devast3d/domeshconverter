@@ -29,9 +29,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="M3dTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="jsoncpp\json.h">
       <Filter>jsoncpp</Filter>
     </ClInclude>

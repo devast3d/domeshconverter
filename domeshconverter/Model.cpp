@@ -13,6 +13,8 @@ namespace domeshconverter
 
 	bool Model::LoadFromM3d(std::string& filePath, Model& out_model)
 	{
+		cout << "Started reading m3d file\n";
+
 		ifstream file(filePath,  ios::binary);
 
 		if (!file.is_open())
@@ -92,7 +94,7 @@ namespace domeshconverter
 
 			if (numFaces == 0 || numVertices == 0)
 			{
-				cout << "Skipping empty object " << string(nativeObject.Name);
+				cout << "Skipping empty object " << string(nativeObject.Name) << "\n";
 				continue;
 			}
 
@@ -113,11 +115,122 @@ namespace domeshconverter
 			out_model.Objects.push_back(object);
 		}
 
+		file.close();
+
+		cout << "Finished reading m3d file\n";
+
 		return true;
 	}
 
 	bool Model::SaveToJson(std::string& filePath)
 	{
+		cout << "Started writing json\n";
 
+		ofstream file(filePath, ofstream::out);
+
+		if (!file.is_open())
+		{
+			return false;
+		}
+
+		Json::Value root(Json::objectValue);
+		root["ID"] = ID;
+		root["Magic"] = Magic;
+		root["Version"] = Version;
+		root["CRC"] = CRC;
+		root["NOT_CRC"] = NOT_CRC;
+		root["NumTextures"] = NumTextures;
+		root["NumObjects"] = NumObjects;
+
+		Json::Value textures(Json::arrayValue);
+		for (auto& texture : Textures)
+		{
+			Json::Value value(Json::objectValue);
+			value["Path"] = texture.Path;
+			value["Name"] = texture.Name;
+			textures.append(value);
+		}
+		root["Textures"] = textures;
+
+		Json::Value objects(Json::arrayValue);
+		for (auto& object : Objects)
+		{
+			Json::Value objectValue(Json::objectValue);
+			objectValue["Name"] = object.Name;
+			objectValue["Parent"] = object.Parent;
+			Json::Value pivotValue(Json::objectValue);
+			pivotValue["X"] = object.Pivot.X;
+			pivotValue["Y"] = object.Pivot.Y;
+			pivotValue["Z"] = object.Pivot.Z;
+			objectValue["Pivot"] = pivotValue;
+			objectValue["NumVertices"] = object.NumVertices;
+			objectValue["NumFaces"] = object.NumFaces;
+			objectValue["Flags"] = object.Flags;
+			objectValue["Spare1"] = object.Spare1;
+			objectValue["Spare2"] = object.Spare2;
+
+			Json::Value faces(Json::arrayValue);
+			for (auto& face : object.Faces)
+			{
+				Json::Value faceValue(Json::objectValue);
+				Json::Value vertexValue(Json::objectValue);
+				vertexValue["V0"] = face.Vertex[0];
+				vertexValue["V1"] = face.Vertex[1];
+				vertexValue["V2"] = face.Vertex[2];
+				faceValue["Vertex"] = vertexValue;
+				faceValue["Texture"] = face.Texture;
+				Json::Value normalValue(Json::objectValue);
+				normalValue["X"] = face.Normal.X;
+				normalValue["Y"] = face.Normal.Y;
+				normalValue["Z"] = face.Normal.Z;
+				faceValue["Normal"] = normalValue;
+				faceValue["Spare1"] = face.Spare1;
+				faceValue["Spare2"] = face.Spare2;
+
+				faces.append(faceValue);
+			}
+			objectValue["Faces"] = faces;
+
+			Json::Value vertices(Json::arrayValue);
+			for (auto& vertex : object.Vertices)
+			{
+				Json::Value vertexValue(Json::objectValue);
+				Json::Value pointValue(Json::objectValue);
+				pointValue["X"] = vertex.Point.X;
+				pointValue["Y"] = vertex.Point.Y;
+				pointValue["Z"] = vertex.Point.Z;
+				vertexValue["Point"] = pointValue;
+				Json::Value normalValue(Json::objectValue);
+				normalValue["X"] = vertex.Normal.X;
+				normalValue["Y"] = vertex.Normal.Y;
+				normalValue["Z"] = vertex.Normal.Z;
+				vertexValue["Normal"] = normalValue;
+				Json::Value rgbaValue(Json::objectValue);
+				rgbaValue["R"] = vertex.Rgba[0];
+				rgbaValue["G"] = vertex.Rgba[1];
+				rgbaValue["B"] = vertex.Rgba[2];
+				rgbaValue["A"] = vertex.Rgba[3];
+				vertexValue["Rgba"] = rgbaValue;
+				Json::Value uvValue(Json::objectValue);
+				uvValue["U"] = vertex.Uv.X;
+				uvValue["V"] = vertex.Uv.Y;
+				vertexValue["Uv"] = uvValue;
+				vertexValue["Spare1"] = vertex.Spare1;
+				vertexValue["Spare2"] = vertex.Spare2;
+
+				vertices.append(vertexValue);
+			}
+			objectValue["Vertices"] = vertices;
+
+			objects.append(objectValue);
+		}
+		root["Objects"] = objects;
+
+		file << root;
+		file.close();
+
+		cout << "Finished writing json\n";
+
+		return true;
 	}
 }
