@@ -77,7 +77,9 @@ namespace domeshconverter
 
 	public:
 		static bool LoadFromM3d(std::string& filePath, Model& out_model);
+		static bool LoadFromJson(std::string& filePath, Model& out_model);
 
+		bool SaveToM3d(std::string& filePath);
 		bool SaveToJson(std::string& filePath);
 	};
 }
