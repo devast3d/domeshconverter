@@ -1,14 +1,42 @@
+#include "cxxopts\cxxopts.hpp"
 #include "Model.h"
+#include <string>
 
 using domeshconverter::Model;
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	Model model;
-	
-	//Model::LoadFromM3d(std::string("D:/Projects/DarkOmenReborn/github/domeshconverter/Test/BASE.M3D"), model);
-	//model.SaveToJson(std::string("D:/Projects/DarkOmenReborn/github/domeshconverter/Test/BASE.json"));
+	cxxopts::Options options("domeshconverter", "Dark Omen mesh converter.");
+	options.add_options()
+		("i,infile", "Input file path", cxxopts::value<std::string>())
+		("o,outfile", "Output file path", cxxopts::value<std::string>())
+		("m,mode", "Mode. Available options: m3d_to_json, json_to_m3d", cxxopts::value<std::string>())
+		;
+	options.parse(argc, argv);
 
-	Model::LoadFromJson(std::string("D:/Projects/DarkOmenReborn/github/domeshconverter/Test/BASE.json"), model);
-	model.SaveToM3d(std::string("D:/Projects/DarkOmenReborn/github/domeshconverter/Test/BASE1.M3D"));
+	Model model;
+	bool result;
+
+	std::string inputFile = options["infile"].as<std::string>();
+	std::string outputFile = options["outfile"].as<std::string>();
+
+	std::string mode = options["mode"].as<std::string>();
+	if (mode == std::string("m3d_to_json"))
+	{
+		result = Model::LoadFromM3d(inputFile, model);
+		if (result)
+		{
+			result = model.SaveToJson(outputFile);
+		}
+	}
+	else if (mode == std::string("m3d_to_json"))
+	{
+		result = Model::LoadFromJson(inputFile, model);
+		if (result)
+		{
+			result = model.SaveToM3d(outputFile);
+		}
+	}
+
+	return result ? 0 : 1;
 }

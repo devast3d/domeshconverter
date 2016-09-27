@@ -9,12 +9,11 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="jsoncpp">
       <UniqueIdentifier>{506eec51-9a4e-4fe1-acc6-18660c3279ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cxxopts">
+      <UniqueIdentifier>{fcba8cc4-b784-4870-8582-4bca45b10ff9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -37,6 +36,9 @@
     </ClInclude>
     <ClInclude Include="Model.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cxxopts\cxxopts.hpp">
+      <Filter>cxxopts</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
