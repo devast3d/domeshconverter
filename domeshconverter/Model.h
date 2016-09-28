@@ -81,5 +81,6 @@ namespace domeshconverter
 
 		bool SaveToM3d(std::string& filePath);
 		bool SaveToJson(std::string& filePath);
+		bool SaveToObj(std::string& filePath);
 	};
 }

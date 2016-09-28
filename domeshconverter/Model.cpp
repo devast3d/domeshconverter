@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 #include <cstring>
+#include <cmath>
+#include <map>
 
 using namespace std;
 
@@ -409,6 +411,110 @@ namespace domeshconverter
 		file.close();
 
 		cout << "Finished writing json\n";
+
+		return true;
+	}
+
+	bool Model::SaveToObj(std::string& filePath)
+	{
+		cout << "Started writing obj\n";
+
+		ofstream file(filePath, ofstream::out);
+
+		if (!file.is_open())
+		{
+			return false;
+		}
+
+		string mtlFilePath = filePath.substr(0, filePath.find_last_of(".")) + ".mtl";
+		string matlFileName = mtlFilePath.substr(mtlFilePath.find_last_of("\\/") + 1);
+
+		file << "mtllib " << matlFileName << endl;
+
+		int vertexOffset = 0;
+		int group = 0;
+		for (auto& object : Objects)
+		{
+			file << "g " << object.Name << endl;
+			
+			float pivotX = object.Pivot.X;
+			float pivotY = object.Pivot.Y;
+			float pivotZ = object.Pivot.Z;
+
+			for (auto& vertex : object.Vertices)
+			{
+				float invNormalLength = 1.0f / sqrtf(vertex.Normal.X * vertex.Normal.X + vertex.Normal.Y * vertex.Normal.Y + vertex.Normal.Z * vertex.Normal.Z);
+
+				float px = vertex.Point.X + pivotX;
+				float py = vertex.Point.Y + pivotY;
+				float pz = vertex.Point.Z + pivotZ;
+
+				float u = vertex.Uv.X;
+				float v = 1.0f - vertex.Uv.Y;
+
+				float nx = vertex.Normal.X * invNormalLength;
+				float ny = vertex.Normal.Y * invNormalLength;
+				float nz = vertex.Normal.Z * invNormalLength;
+
+				file << "v " << px << " " << pz << " " << py << endl;
+				file << "vt " << u << " " << v << endl;
+				file << "vn " << nx << " " << nz << " " << ny  << endl;
+			}
+
+			map<uint16_t, vector<uint32_t>> textureToFaceMap;
+			for (uint32_t faceIndex = 0; faceIndex < object.Faces.size(); ++faceIndex)
+			{
+				uint16_t textureIndex = object.Faces[faceIndex].Texture;
+				textureToFaceMap[textureIndex].push_back(faceIndex);
+			}
+
+			for (auto& pair : textureToFaceMap)
+			{
+				//++group;
+				//file << "g faces" << group << endl;
+
+				string originalTextureName = Textures[pair.first].Name;
+				string textureName = originalTextureName.substr(0, originalTextureName.find_last_of("."));
+				file << "usemtl " << "M_" << textureName << endl;
+				
+				for (auto& faceIndex : pair.second)
+				{
+					Face& face = object.Faces[faceIndex];
+					
+					int v0 = face.Vertex[0] + 1 + vertexOffset;
+					int v1 = face.Vertex[2] + 1 + vertexOffset;
+					int v2 = face.Vertex[1] + 1 + vertexOffset;
+
+					file << "f ";
+					file << v0 << "/" << v0 << "/" << v0 << " ";
+					file << v1 << "/" << v1 << "/" << v1 << " ";
+					file << v2 << "/" << v2 << "/" << v2 << endl;
+				}
+			}
+
+			vertexOffset += object.Vertices.size();
+		}
+
+		file.close();
+
+		
+		ofstream mtlFile(mtlFilePath, ofstream::out);
+
+		if (!mtlFile.is_open())
+		{
+			return false;
+		}
+
+		for (auto& texture : Textures)
+		{
+			string textureName = texture.Name.substr(0, texture.Name.find_last_of("."));
+			mtlFile << "newmtl " << "M_" << textureName << endl;
+			mtlFile << "map_Kd " << "./TEXTURE/" << texture.Name << endl;
+		}
+
+		mtlFile.close();
+
+		cout << "Finished writing obj\n";
 
 		return true;
 	}
