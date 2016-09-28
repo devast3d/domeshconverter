@@ -431,11 +431,16 @@ namespace domeshconverter
 
 		file << "mtllib " << matlFileName << endl;
 
-		int vertexOffset = 0;
-		int group = 0;
-		for (auto& object : Objects)
+		map<uint16_t, map<uint32_t, vector<uint32_t>>> renderMap;
+		vector<uint32_t> vertexOffsets;
+		uint32_t vertexOffset = 0;
+		
+		for (uint32_t objectIndex = 0; objectIndex < Objects.size(); ++objectIndex)
 		{
-			file << "g " << object.Name << endl;
+			Object& object = Objects[objectIndex];
+
+			//if (object.Name != "n1") continue;
+			//file << "g " << object.Name << endl;
 			
 			float pivotX = object.Pivot.X;
 			float pivotY = object.Pivot.Y;
@@ -461,26 +466,65 @@ namespace domeshconverter
 				file << "vn " << nx << " " << nz << " " << ny  << endl;
 			}
 
-			map<uint16_t, vector<uint32_t>> textureToFaceMap;
+			//map<uint16_t, vector<uint32_t>> textureToFaceMap;
 			for (uint32_t faceIndex = 0; faceIndex < object.Faces.size(); ++faceIndex)
 			{
 				uint16_t textureIndex = object.Faces[faceIndex].Texture;
-				textureToFaceMap[textureIndex].push_back(faceIndex);
+				//textureToFaceMap[textureIndex].push_back(faceIndex);
+				renderMap[textureIndex][objectIndex].push_back(faceIndex);
 			}
 
-			for (auto& pair : textureToFaceMap)
-			{
-				//++group;
-				//file << "g faces" << group << endl;
+			//for (auto& pair : textureToFaceMap)
+			//{
+			//	//++group;
+			//	//file << "g faces" << group << endl;
 
-				string originalTextureName = Textures[pair.first].Name;
+			//	string originalTextureName = Textures[pair.first].Name;
+			//	string textureName = originalTextureName.substr(0, originalTextureName.find_last_of("."));
+			//	file << "usemtl " << "M_" << textureName << endl;
+			//	
+			//	for (auto& faceIndex : pair.second)
+			//	{
+			//		Face& face = object.Faces[faceIndex];
+			//		
+			//		int v0 = face.Vertex[0] + 1 + vertexOffset;
+			//		int v1 = face.Vertex[2] + 1 + vertexOffset;
+			//		int v2 = face.Vertex[1] + 1 + vertexOffset;
+
+			//		file << "f ";
+			//		file << v0 << "/" << v0 << "/" << v0 << " ";
+			//		file << v1 << "/" << v1 << "/" << v1 << " ";
+			//		file << v2 << "/" << v2 << "/" << v2 << endl;
+			//	}
+			//}
+
+			vertexOffsets.push_back(vertexOffset);
+			vertexOffset += object.Vertices.size();
+		}
+
+		uint32_t faceGroupIndex = 0;
+		uint32_t objectIndex = 0;
+		for (auto& pair : renderMap)
+		{
+			uint16_t textureIndex = pair.first;
+
+			++faceGroupIndex;
+			file << "g facegroup" << faceGroupIndex << endl;
+
+			for (auto& objectPair : pair.second)
+			{
+				uint32_t objectIndex = objectPair.first;
+				Object& object = Objects[objectIndex];
+				uint32_t vertexOffset = vertexOffsets[objectIndex];
+
+				string originalTextureName = Textures[textureIndex].Name;
 				string textureName = originalTextureName.substr(0, originalTextureName.find_last_of("."));
 				file << "usemtl " << "M_" << textureName << endl;
-				
-				for (auto& faceIndex : pair.second)
+
+				for (auto& faceIndex : objectPair.second)
 				{
 					Face& face = object.Faces[faceIndex];
-					
+
 					int v0 = face.Vertex[0] + 1 + vertexOffset;
 					int v1 = face.Vertex[2] + 1 + vertexOffset;
 					int v2 = face.Vertex[1] + 1 + vertexOffset;
@@ -491,8 +535,6 @@ namespace domeshconverter
 					file << v2 << "/" << v2 << "/" << v2 << endl;
 				}
 			}
-
-			vertexOffset += object.Vertices.size();
 		}
 
 		file.close();
