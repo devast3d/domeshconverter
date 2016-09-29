@@ -502,24 +502,20 @@ namespace domeshconverter
 			vertexOffset += object.Vertices.size();
 		}
 
-		uint32_t faceGroupIndex = 0;
 		uint32_t objectIndex = 0;
 		for (auto& pair : renderMap)
 		{
-			uint16_t textureIndex = pair.first;
+			Texture& texture = Textures[pair.first];
+			string textureName = texture.Name.substr(0, texture.Name.find_last_of("."));
 
-			++faceGroupIndex;
-			file << "g facegroup" << faceGroupIndex << endl;
+			file << "usemtl " << "M_" << textureName << endl;
+			file << "g " << textureName << endl;
 
 			for (auto& objectPair : pair.second)
 			{
 				uint32_t objectIndex = objectPair.first;
 				Object& object = Objects[objectIndex];
 				uint32_t vertexOffset = vertexOffsets[objectIndex];
-
-				string originalTextureName = Textures[textureIndex].Name;
-				string textureName = originalTextureName.substr(0, originalTextureName.find_last_of("."));
-				file << "usemtl " << "M_" << textureName << endl;
 
 				for (auto& faceIndex : objectPair.second)
 				{
@@ -538,8 +534,7 @@ namespace domeshconverter
 		}
 
 		file.close();
-
-		
+				
 		ofstream mtlFile(mtlFilePath, ofstream::out);
 
 		if (!mtlFile.is_open())

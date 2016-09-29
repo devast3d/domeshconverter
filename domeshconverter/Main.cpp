@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 	options.parse(argc, argv);
 
 	Model model;
-	bool result;
+	bool result = true;
 
 	std::string inputFile = options["infile"].as<std::string>();
 	std::string outputFile = options["outfile"].as<std::string>();
